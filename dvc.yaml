@@ -1,0 +1,251 @@
+stages:
+  # 1. Подготовка данных
+  prepare:
+    cmd: python src/data_preparation.py
+    deps:
+      - data/cancer_reg.csv
+      - src/data_preparation.py
+    outs:
+      - data/processed/X_train.csv
+      - data/processed/X_valid.csv
+      - data/processed/X_test.csv
+      - data/processed/y_train.csv
+      - data/processed/y_valid.csv
+      - data/processed/y_test.csv
+
+  # ===== ЛИНЕЙНАЯ РЕГРЕССИЯ =====
+  linear_regression_train:
+    cmd: python src/models/linear_regression/train.py
+    deps:
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - src/utils.py
+      - src/models/linear_regression/train.py
+      - params.yaml
+    outs:
+      - models/linear_regression/model.pkl
+      - models/linear_regression/scaler.pkl
+      - models/linear_regression/weights_hist.png
+    metrics:
+      - metrics/linear_regression/train_metrics.json:
+          cache: false
+
+  linear_regression_validate:
+    cmd: python src/models/linear_regression/validate.py
+    deps:
+      - data/processed/X_valid.csv
+      - data/processed/y_valid.csv
+      - models/linear_regression/model.pkl
+      - models/linear_regression/scaler.pkl
+      - src/utils.py
+      - src/models/linear_regression/validate.py
+    outs:
+      - models/linear_regression/valid_pred_vs_actual.png
+      - models/linear_regression/valid_residuals.png
+    metrics:
+      - metrics/linear_regression/valid_metrics.json:
+          cache: false
+
+  linear_regression_test:
+    cmd: python src/models/linear_regression/test.py
+    deps:
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - models/linear_regression/model.pkl
+      - models/linear_regression/scaler.pkl
+      - src/utils.py
+      - src/models/linear_regression/test.py
+    outs:
+      - models/linear_regression/test_pred_vs_actual.png
+      - models/linear_regression/test_residuals.png
+    metrics:
+      - metrics/linear_regression/test_metrics.json:
+          cache: false
+
+# ===== Дерево решений =====
+  decision_tree_train:
+    cmd: python src/models/decision_tree/train.py
+    deps:
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - src/utils.py
+      - src/models/decision_tree/train.py
+      - params.yaml
+    outs:
+      - models/decision_tree/model.pkl
+    metrics:
+      - metrics/decision_tree/train_metrics.json:
+          cache: false
+
+  decision_tree_validate:
+    cmd: python src/models/decision_tree/validate.py
+    deps:
+      - data/processed/X_valid.csv
+      - data/processed/y_valid.csv
+      - models/decision_tree/model.pkl
+      - src/utils.py
+      - src/models/decision_tree/validate.py
+    outs:
+      - models/decision_tree/valid_pred_vs_actual.png
+      - models/decision_tree/valid_residuals.png
+    metrics:
+      - metrics/decision_tree/valid_metrics.json:
+          cache: false
+
+  decision_tree_test:
+    cmd: python src/models/decision_tree/test.py
+    deps:
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - models/decision_tree/model.pkl
+      - src/utils.py
+      - src/models/decision_tree/test.py
+    outs:
+      - models/decision_tree/test_pred_vs_actual.png
+      - models/decision_tree/test_residuals.png
+    metrics:
+      - metrics/decision_tree/test_metrics.json:
+          cache: false
+
+  # ===== CatBoost =====
+  catboost_train:
+    cmd: python src/models/catboost/train.py
+    deps:
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - src/utils.py
+      - src/models/catboost/train.py
+      - params.yaml
+    outs:
+      - models/catboost/model.pkl
+      - models/catboost/feature_importance.csv
+    metrics:
+      - metrics/catboost/train_metrics.json:
+          cache: false
+
+  catboost_validate:
+    cmd: python src/models/catboost/validate.py
+    deps:
+      - data/processed/X_valid.csv
+      - data/processed/y_valid.csv
+      - models/catboost/model.pkl
+      - src/utils.py
+      - src/models/catboost/validate.py
+    outs:
+      - models/catboost/valid_pred_vs_actual.png
+      - models/catboost/valid_residuals.png
+    metrics:
+      - metrics/catboost/valid_metrics.json:
+          cache: false
+
+  catboost_test:
+    cmd: python src/models/catboost/test.py
+    deps:
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - models/catboost/model.pkl
+      - src/utils.py
+      - src/models/catboost/test.py
+    outs:
+      - models/catboost/test_pred_vs_actual.png
+      - models/catboost/test_residuals.png
+    metrics:
+      - metrics/catboost/test_metrics.json:
+          cache: false
+
+  # ===== XGBoost =====
+  XGBoost_train:
+    cmd: python src/models/XGBoost/train.py
+    deps:
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - src/utils.py
+      - src/models/XGBoost/train.py
+      - params.yaml
+    outs:
+      - models/XGBoost/model.pkl
+      - models/XGBoost/feature_importance.csv
+    metrics:
+      - metrics/XGBoost/train_metrics.json:
+          cache: false
+
+  XGBoost_validate:
+    cmd: python src/models/XGBoost/validate.py
+    deps:
+      - data/processed/X_valid.csv
+      - data/processed/y_valid.csv
+      - models/XGBoost/model.pkl
+      - src/utils.py
+      - src/models/XGBoost/validate.py
+    outs:
+      - models/XGBoost/valid_pred_vs_actual.png
+      - models/XGBoost/valid_residuals.png
+    metrics:
+      - metrics/XGBoost/valid_metrics.json:
+          cache: false
+
+  XGBoost_test:
+    cmd: python src/models/XGBoost/test.py
+    deps:
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - models/XGBoost/model.pkl
+      - src/utils.py
+      - src/models/XGBoost/test.py
+    outs:
+      - models/XGBoost/test_pred_vs_actual.png
+      - models/XGBoost/test_residuals.png
+    metrics:
+      - metrics/XGBoost/test_metrics.json:
+          cache: false
+
+  # ===== Neural_network =====
+  neural_train:
+    cmd: python src/models/neural_network/train.py
+    deps:
+      - src/models/neural_network/train.py
+      - src/models/neural_network/utils.py
+      - data/processed/X_train.csv
+      - data/processed/y_train.csv
+      - params.yaml
+    outs:
+      - models/neural_network/model.keras
+      - models/neural_network/scaler.pkl
+    metrics:
+      - metrics/neural_network/train_metrics.json:
+          cache: false
+    plots:
+      - models/neural_network/learning_curves.png
+      - models/neural_network/weights_histograms.png
+
+  neural_validate:
+    cmd: python src/models/neural_network/validate.py
+    deps:
+      - src/models/neural_network/validate.py
+      - src/models/neural_network/utils.py
+      - data/processed/X_valid.csv
+      - data/processed/y_valid.csv
+      - models/neural_network/model.keras
+      - models/neural_network/scaler.pkl
+    outs:
+      - models/neural_network/valid_pred_vs_actual.png
+      - models/neural_network/valid_residuals.png
+    metrics:
+      - metrics/neural_network/valid_metrics.json:
+          cache: false
+
+  neural_test:
+    cmd: python src/models/neural_network/test.py
+    deps:
+      - src/models/neural_network/test.py
+      - src/models/neural_network/utils.py
+      - data/processed/X_test.csv
+      - data/processed/y_test.csv
+      - models/neural_network/model.keras
+      - models/neural_network/scaler.pkl
+    outs:
+      - models/neural_network/test_pred_vs_actual.png
+      - models/neural_network/test_residuals.png
+    metrics:
+      - metrics/neural_network/test_metrics.json:
+          cache: false
